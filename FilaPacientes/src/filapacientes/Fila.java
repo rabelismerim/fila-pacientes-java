@@ -1,80 +1,44 @@
 package filapacientes;
 
-import javax.swing.JOptionPane;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
-class Fila {
-
+/** Fila circular limitada, independente da interface. */
+public final class Fila {
+    public static final int CAPACIDADE_PADRAO = 20;
+    private final Paciente[] pacientes;
     private int inicio;
-    private int fim;
-    private final int tamanho;
-    private int qtdeElementos;
-    //criei essa variavel para controlar tamanho da fila
-    private int qtdInsercoes;
-    private final Paciente f[];
-    
-    public Fila() {
-        inicio = fim = -1;
-        tamanho = 20;//0-19
-        f = new Paciente[tamanho];
-        qtdeElementos = qtdInsercoes = 0;   
-        
-    }
-    
+    private int quantidade;
 
-    public void adicionar(Paciente p) {
-        if (!estaCheia() && qtdInsercoes < tamanho) {
-            if (inicio == -1) {
-                inicio = 0;
-            }
-            fim++;
-            f[fim] = p;
-            qtdInsercoes++;
-            qtdeElementos++;
-        } else {
-            JOptionPane.showMessageDialog(null, "Fila Ja completa");
-        }
+    public Fila() { this(CAPACIDADE_PADRAO); }
+    public Fila(int capacidade) {
+        if (capacidade <= 0) throw new IllegalArgumentException("A capacidade deve ser positiva.");
+        pacientes = new Paciente[capacidade];
     }
-
-    public void remover() {
-        if (!estaVazia()) {
-            inicio++;
-            qtdeElementos--;
-        }
+    public void adicionar(Paciente paciente) {
+        Objects.requireNonNull(paciente, "Paciente obrigatório.");
+        if (estaCheia()) throw new IllegalStateException("A fila está cheia. Atenda um paciente para liberar uma vaga.");
+        pacientes[(inicio + quantidade) % pacientes.length] = paciente;
+        quantidade++;
     }
-    
-    public boolean estaVazia() {
-        if (qtdeElementos == 0) {
-            return true;
-        }
-        return false;
+    public Paciente remover() {
+        if (estaVazia()) throw new IllegalStateException("Não há pacientes aguardando atendimento.");
+        Paciente paciente = pacientes[inicio];
+        pacientes[inicio] = null;
+        inicio = (inicio + 1) % pacientes.length;
+        quantidade--;
+        return paciente;
     }
-    
-    public boolean estaCheia() {
-        //retirei o -1 pois nao concordei ja que nao verificou o vetor mas sim o proprio tamanho q inicialmente o zero mas comeca a contar do 1
-        if (qtdeElementos == tamanho) {
-            return true;
-        }
-        return false;
-    }
-    
-    public void mostrar() {
-        String elementos = "";
-        for (int i = inicio; i <= fim; i++) {
-            elementos += i + " - " + f[i].getNome() + " - " + f[i].getSexo() + " - " + f[i].getIdade() + "\n";
-        }
-        
-        JOptionPane.showMessageDialog(null, elementos);
-    }
-
-    public Paciente[] pegaFila() {
-        return f;
-    }
-
-    public int getInicio() {
-        return inicio;        
-    }
-
-    public int getFim() {
-        return fim;        
+    public Paciente proximo() { return estaVazia() ? null : pacientes[inicio]; }
+    public boolean estaVazia() { return quantidade == 0; }
+    public boolean estaCheia() { return quantidade == pacientes.length; }
+    public int getQuantidade() { return quantidade; }
+    public int getCapacidade() { return pacientes.length; }
+    public List<Paciente> listar() {
+        List<Paciente> resultado = new ArrayList<>();
+        for (int i = 0; i < quantidade; i++) resultado.add(pacientes[(inicio + i) % pacientes.length]);
+        return Collections.unmodifiableList(resultado);
     }
 }
