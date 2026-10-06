@@ -1,0 +1,6 @@
+.tools/
+FilaPacientes/build/
+FilaPacientes/dist/
+FilaPacientes/nbproject/private/
+*.class
+*.log
